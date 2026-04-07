@@ -78,6 +78,36 @@ resource "google_cloudbuildv2_repository" "source_repo" {
   remote_uri        = "https://github.com/${var.github_repo_owner}/${var.github_repo_name}.git"
 }
 
+# --- VPC & Private Service Access for Cloud SQL ---
+resource "google_compute_network" "main" {
+  name                    = "cs-${var.environment}-vpc"
+  project                 = var.gcp_project_id
+  auto_create_subnetworks = false
+}
+
+resource "google_compute_subnetwork" "main" {
+  name          = "cs-${var.environment}-subnet"
+  project       = var.gcp_project_id
+  region        = var.gcp_region
+  network       = google_compute_network.main.id
+  ip_cidr_range = "10.0.0.0/24"
+}
+
+resource "google_compute_global_address" "private_ip_range" {
+  name          = "cs-${var.environment}-private-ip"
+  project       = var.gcp_project_id
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.main.id
+}
+
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.main.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_range.name]
+}
+
 # Postgres Database related
 # 1. Read the Secret (Created by Bootstrap script)
 data "google_secret_manager_secret_version" "db_password" {
@@ -91,9 +121,12 @@ module "postgresql" {
   source      = "../postgresql"
   project_id  = var.gcp_project_id
   region      = var.gcp_region
-  
+
   # Pass the ACTUAL value to create the user
-  db_password = data.google_secret_manager_secret_version.db_password.secret_data
+  db_password     = data.google_secret_manager_secret_version.db_password.secret_data
+  private_network = google_compute_network.main.self_link
+
+  depends_on = [google_service_networking_connection.private_vpc_connection]
 }
 
 # --- Service Module Calls ---
@@ -124,6 +157,10 @@ module "backend_service" {
       _SERVICE_NAME = var.backend_service_name
     }
   )
+
+  # networking
+  vpc_network    = google_compute_network.main.id
+  vpc_subnetwork = google_compute_subnetwork.main.id
 
   # database
   cloud_sql_connection_name = module.postgresql.connection_name

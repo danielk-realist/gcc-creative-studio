@@ -118,10 +118,14 @@ variable "apis_to_enable" {
   type        = list(string)
   description = "A list of Google Cloud APIs to enable on the project."
   default = [
-    "serviceusage.googleapis.com",     # Required to enable other APIs
-    "iam.googleapis.com",              # Required for IAM management
-    "cloudbuild.googleapis.com",       # Required for Cloud Build
-    "artifactregistry.googleapis.com", # Required for Artifact Registry
-    "run.googleapis.com"               # Required for Cloud Run
+    "serviceusage.googleapis.com",      # Required to enable other APIs
+    "iam.googleapis.com",               # Required for IAM management
+    "cloudbuild.googleapis.com",        # Required for Cloud Build
+    "artifactregistry.googleapis.com",  # Required for Artifact Registry
+    "run.googleapis.com",               # Required for Cloud Run
+    "compute.googleapis.com",           # Required for VPC networking
+    "servicenetworking.googleapis.com", # Required for Private Service Access (Cloud SQL private IP)
+    "sqladmin.googleapis.com",          # Required for Cloud SQL
+    "vpcaccess.googleapis.com",         # Required for Serverless VPC Access
   ]
 }

@@ -118,6 +118,17 @@ variable "runtime_secrets" {
   default     = {}
 }
 
+# networking
+variable "vpc_network" {
+  type        = string
+  description = "The VPC network self_link for Direct VPC Egress."
+}
+
+variable "vpc_subnetwork" {
+  type        = string
+  description = "The subnetwork self_link for Direct VPC Egress."
+}
+
 # database
 variable "cloud_sql_connection_name" {
   description = "Cloud SQL Instance Connection Name"

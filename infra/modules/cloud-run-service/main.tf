@@ -32,13 +32,22 @@ resource "google_artifact_registry_repository" "repo" {
 }
 
 resource "google_cloud_run_v2_service" "this" {
-  name             = var.service_name
-  location         = var.gcp_region
-  custom_audiences = var.custom_audiences
+  name                = var.service_name
+  location            = var.gcp_region
+  custom_audiences    = var.custom_audiences
+  ingress             = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
   deletion_protection = false
 
   template {
     service_account = google_service_account.run_sa.email
+
+    vpc_access {
+      network_interfaces {
+        network    = var.vpc_network
+        subnetwork = var.vpc_subnetwork
+      }
+      egress = "PRIVATE_RANGES_ONLY"
+    }
     volumes {
       name = "cloudsql"
       cloud_sql_instance {
