@@ -90,7 +90,7 @@ resource "google_compute_subnetwork" "main" {
   project       = var.gcp_project_id
   region        = var.gcp_region
   network       = google_compute_network.main.id
-  ip_cidr_range = "10.0.0.0/24"
+  ip_cidr_range = "10.0.0.0/20"
 }
 
 resource "google_compute_global_address" "private_ip_range" {

@@ -35,7 +35,7 @@ resource "google_cloud_run_v2_service" "this" {
   name                = var.service_name
   location            = var.gcp_region
   custom_audiences    = var.custom_audiences
-  ingress             = "INGRESS_TRAFFIC_INTERNAL_LOAD_BALANCER"
+  ingress             = "INGRESS_TRAFFIC_ALL"
   deletion_protection = false
 
   template {
